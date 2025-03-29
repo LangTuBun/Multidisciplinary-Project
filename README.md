@@ -9,18 +9,16 @@ A multidisciplinary project that uses YOLO bits to detect temperature and humidi
 - **Hardware**: YOLO bits for temperature and humidity sensing
 - **Styling**: CSS modules
 
-## 📁 Project Structure
-
-├── components/
-│   ├── BottomNavigation.jsx  # Navigation component
-│   ├── RoomCard.jsx          # Room display card component
-│   └── WeatherWidget.jsx     # Weather information widget
-├── App.css                   # Main application styles
-├── App.jsx                   # Main application component
-├── index.css                 # Global styles
-├── main.jsx                  # Entry point
-└── ... (configuration files)
-
+📂 Project Structure
+ ┣ 📂 components/
+ ┃ ┣ 📄 BottomNavigation.jsx  # Navigation component
+ ┃ ┣ 📄 RoomCard.jsx  # Room display card component
+ ┃ ┗ 📄 WeatherWidget.jsx  # Weather information widget
+ ┣ 📄 App.css  # Main application styles
+ ┣ 📄 App.jsx  # Main application component
+ ┣ 📄 index.css  # Global styles
+ ┣ 📄 main.jsx  # Entry point
+ ┗ 📄 ... (configuration files)
 ## 🚀 Features
 
 - Real-time temperature and humidity monitoring
