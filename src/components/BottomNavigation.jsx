@@ -13,7 +13,7 @@ const BottomNavigation = () => {
       right: 0, 
       width: "100%", 
       py: 1 ,
-      mx: "auto"
+      mx: "auto" ,
     }}>
       <MUIBottomNavigation
         showLabels
@@ -32,9 +32,47 @@ const BottomNavigation = () => {
           }
         }}
       >
-        <BottomNavigationAction icon={<RotateLeft />} />
-        <BottomNavigationAction icon={<Home />} />
-        <BottomNavigationAction icon={<PowerSettingsNew />} />
+        <BottomNavigationAction 
+          icon={<RotateLeft />} 
+          href="/history"
+          sx={{
+            background: "transparent",
+            borderRadius: "50px",
+            transition: "all 0.3s ease-in-out",
+            "&:hover": {
+              background: "linear-gradient(to right, #2C65DB, #4BF191)",
+              color: "white",
+              paddingX: 2, // Slight expansion effect
+            },
+          }}      
+        />
+        <BottomNavigationAction 
+          icon={<Home />} 
+          href='/'
+          sx={{
+            background: "transparent",
+            borderRadius: "50px",
+            transition: "all 0.3s ease-in-out",
+            "&:hover": {
+              background: "linear-gradient(to right, #2C65DB, #4BF191)",
+              color: "white",
+              paddingX: 2, // Slight expansion effect
+            },
+          }}
+        />
+        <BottomNavigationAction 
+          icon={<PowerSettingsNew />} 
+          sx={{
+            background: "transparent",
+            borderRadius: "50px",
+            transition: "all 0.3s ease-in-out",
+            "&:hover": {
+              background: "linear-gradient(to right, #2C65DB, #4BF191)",
+              color: "white",
+              paddingX: 2, // Slight expansion effect
+            },
+          }}
+        />
       </MUIBottomNavigation>
     </Box>
   );
