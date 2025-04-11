@@ -155,9 +155,8 @@ const NotificationHistory = () => {
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [dateMenuAnchorEl, setDateMenuAnchorEl] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState("Temperature");
-  const [sortOrder, setSortOrder] = useState("desc"); // Default to newest first
+  const [sortOrder, setSortOrder] = useState("desc");
   
-  // Sample notification data with proper date objects
   const notifications = [
     {
       id: 1,
