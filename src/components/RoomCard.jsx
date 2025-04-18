@@ -6,33 +6,33 @@ const RoomCard = ({ image, name, deviceCount }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/rooms', { state: { name: name } });
+    navigate('/room', { state: { name: name } });
   };
   
 
   return (
     <Card 
       sx={{
-        p: "2px", // This creates the "border"
-        my: 2,
-        borderRadius: 2,
+        borderRadius: 4,
         cursor: 'pointer',
+        mb: 2,
       }}
       onClick={handleClick}
     >
       <Box
         sx = {{
-          backgroundColor: '#2C2C2C',
+          p: "4px",
           overflow: 'hidden',
-          borderRadius: 2,
-          borderWidth: 2,
           borderStyle: 'solid',
-          borderImageSlice: 1,
-          borderImageSource: "linear-gradient(to right, #2C65DB, #4BF191)",
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
-          '&:hover': {
-            borderImageSource: "linear-gradient(to right, #4BF191, #2C65DB)",
-          },
+          background: "transparent",
+          backgroundImage: `
+            linear-gradient(#1E1E1E, #1E1E1E), 
+            linear-gradient(to right, #4BF191, #2C65DB)
+          `,
+          backgroundOrigin: "border-box",
+          backgroundClip: "content-box, border-box",
+          border: "1px solid transparent",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
           transition: 'background-color 0.3s, box-shadow 0.3s',
           width: '100%',
           display: 'flex',
@@ -50,22 +50,21 @@ const RoomCard = ({ image, name, deviceCount }) => {
         />
         <CardContent 
           sx={{ 
+            p: 2,
             flex: 1, 
             display: 'flex', 
             flexDirection: 'column', 
             justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center',
             color: 'white',
-            py: 2,
-            px: 3,
-            '&:last-child': {
-              paddingBottom: 2
-            }
+            bgcolor: 'white',
           }}
         >
-          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+          <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', color: 'black', mb: 1 }}>
             {name}
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ color: 'gray' }}>
             {deviceCount} Devices
           </Typography>
         </CardContent>
