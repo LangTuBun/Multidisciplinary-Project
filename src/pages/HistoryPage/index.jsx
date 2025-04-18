@@ -127,10 +127,11 @@ const NotificationHistory = () => {
         sx={{
           width: "calc(100vh * 9 / 16)",
           maxWidth: "450px",
-          bgcolor: "#202a32",
+          background: "linear-gradient(to bottom, #202A32 0% 70%, #2C65DB 80%, #4BF191 90% 100%)",
           color: "white",
           position: "relative",
           overflowY: "auto",
+          borderRadius: 4,
           pb: 8, // Add bottom padding for the navigation bar
         }}
       >

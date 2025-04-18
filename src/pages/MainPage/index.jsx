@@ -17,9 +17,9 @@ import masterBedroomImage from "../../assets/master-bedroom.jpg";
 import livingRoomImage from "../../assets/living-room.jpg";
 
 const avatars = [
-  "/public/avatar/meg.jpg",
-  "/public/avatar/peter.png",
-  "/public/avatar/quagmire.png",
+  "/avatar/meg.jpg",
+  "/avatar/peter.png",
+  "/avatar/quagmire.png",
 ];
 
 const MainPage = () => {
