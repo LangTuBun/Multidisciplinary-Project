@@ -10,9 +10,8 @@ const BottomNavigation = () => {
       position: 'absolute', 
       bottom: 0, 
       left: 0, 
-      right: 0, 
-      width: "100%", 
-      py: 1 ,
+      right: 0,
+      width: "calc(100vh * 9 / 16)",
       mx: "auto" ,
     }}>
       <MUIBottomNavigation
@@ -23,17 +22,18 @@ const BottomNavigation = () => {
         }}
         sx={{
           backgroundColor: '#2C2C2C',
-          borderRadius: 3,
           '& .MuiBottomNavigationAction-root': {
             color: 'rgba(255,255,255,0.5)',
           },
           '& .Mui-selected': {
             color: 'white',
-          }
+          },
+          borderRadius: 4,
+          p: 1,
         }}
       >
         <BottomNavigationAction 
-          icon={<RotateLeft />} 
+          icon={<RotateLeft sx={{ fontSize: 32, color: "#fff" }} />}
           href="/history"
           sx={{
             background: "transparent",
@@ -46,8 +46,8 @@ const BottomNavigation = () => {
             },
           }}      
         />
-        <BottomNavigationAction 
-          icon={<Home />} 
+        <BottomNavigationAction
+          icon={<Home sx={{ fontSize: 32, color: "#fff" }} />}
           href='/'
           sx={{
             background: "transparent",
@@ -61,7 +61,7 @@ const BottomNavigation = () => {
           }}
         />
         <BottomNavigationAction 
-          icon={<PowerSettingsNew />} 
+          icon={<PowerSettingsNew sx={{ fontSize: 32, color: "#fff" }} />}
           sx={{
             background: "transparent",
             borderRadius: "50px",

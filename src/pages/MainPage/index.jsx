@@ -36,13 +36,15 @@ const MainPage = () => {
       <Box
         sx={{
           width: "calc(100vh * 9 / 16)",
-          // height: "100vh",
-          bgcolor: "#202a32",
+          background: "linear-gradient(to bottom, #202A32 0% 70%, #2C65DB 80%, #4BF191 90% 100%)",
           color: "white",
-          p: 3,
           position: "relative",
-          overflowY: "auto",
-          pr: 1
+          overflowY: "scroll",
+          paddingTop: 1,
+          borderRadius: 4,
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
         }}
       >
         <Box

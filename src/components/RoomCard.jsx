@@ -6,7 +6,7 @@ const RoomCard = ({ image, name, deviceCount }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/rooms', { state: { name: name } });
+    navigate('/room', { state: { name: name } });
   };
   
 
@@ -56,16 +56,17 @@ const RoomCard = ({ image, name, deviceCount }) => {
             justifyContent: 'center',
             color: 'white',
             py: 2,
-            px: 3,
+            px: 2,
+            bgcolor: 'white',
             '&:last-child': {
               paddingBottom: 2
             }
           }}
         >
-          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+          <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', color: 'black' }}>
             {name}
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ color: 'gray' }}>
             {deviceCount} Devices
           </Typography>
         </CardContent>
