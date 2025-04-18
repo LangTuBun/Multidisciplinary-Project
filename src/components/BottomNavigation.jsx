@@ -11,8 +11,7 @@ const BottomNavigation = () => {
       bottom: 0, 
       left: 0, 
       right: 0, 
-      width: "100%", 
-      py: 1 ,
+      width: "calc(100vh * 9 / 16)",
       mx: "auto" ,
     }}>
       <MUIBottomNavigation

@@ -21,135 +21,7 @@ import {
 import CloudIcon from '@mui/icons-material/Cloud';
 import HouseIcon from '@mui/icons-material/House';
 import BottomNavigation from "../../components/BottomNavigation";
-
-const NotificationCard = ({ type, timestamp, indoorValue, outdoorValue, date }) => {
-  const [actionDialogOpen, setActionDialogOpen] = useState(false);
-
-  const handleOpenActions = () => {
-    setActionDialogOpen(true);
-  };
-
-  const handleCloseActions = () => {
-    setActionDialogOpen(false);
-  };
-
-  return (
-    <Box
-      sx={{
-        background: "linear-gradient(to right, #1e3a8a, #164e63)",
-        borderRadius: 2,
-        p: 2,
-        mb: 2,
-        color: "white",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-        position: "relative",
-        overflow: "hidden",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "4px",
-          background: "linear-gradient(to right, #3b82f6, #06b6d4)",
-        },
-      }}
-    >
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1, alignItems: "center" }}>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          {type === "temperature" ? (
-            <ThermostatAuto sx={{ mr: 1, color: "#10b981" }} />
-          ) : (
-            <WaterDrop sx={{ mr: 1, color: "#10b981" }} />
-          )}
-          <Typography variant="subtitle1" fontWeight={600}>
-            {type === "temperature" ? "ABNORMAL TEMPERATURE DETECTED" : "ABNORMAL HUMIDITY DETECTED"}
-          </Typography>
-        </Box>
-        <Typography variant="caption" sx={{ color: "#94a3b8" }}>
-          {date}
-        </Typography>
-      </Box>
-
-      <Typography variant="body2" sx={{ mb: 1.5 }}>
-        {type === "temperature" 
-          ? "Indoor temperature is higher than outdoor" 
-          : "Indoor humidity is higher than outdoor"}
-      </Typography>
-
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <HouseIcon sx={{ fontSize: 18, mr: 1, color: "#94a3b8" }} />
-          <Typography variant="body2">
-            Indoor: {type === "temperature" ? `${indoorValue} °C` : `${indoorValue}%`}
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <CloudIcon sx={{ fontSize: 18, mr: 1, color: "#94a3b8" }} />
-          <Typography variant="body2">
-            Outdoor: {type === "temperature" ? `${outdoorValue} °C` : `${outdoorValue}%`}
-          </Typography>
-        </Box>
-      </Box>
-
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
-        <Button
-          size="small"
-          onClick={handleOpenActions}
-          sx={{
-            color: "#38bdf8",
-            textTransform: "none",
-            p: 0,
-            "&:hover": {
-              backgroundColor: "transparent",
-              textDecoration: "underline",
-            },
-          }}
-        >
-          View recommended actions
-        </Button>
-      </Box>
-
-      <Dialog open={actionDialogOpen} onClose={handleCloseActions}>
-        <DialogTitle>
-          {type === "temperature"
-            ? "Temperature Recommendations"
-            : "Humidity Recommendations"}
-        </DialogTitle>
-        <DialogContent>
-          {type === "temperature" ? (
-            <>
-              <Typography variant="body1" paragraph>
-                Your indoor temperature is significantly higher than outdoor. Here are some recommendations:
-              </Typography>
-              <Typography variant="body2" component="ul">
-                <li>Open windows to allow cooler outdoor air to circulate</li>
-                <li>Adjust your thermostat settings</li>
-                <li>Check if heating systems are running unnecessarily</li>
-                <li>Ensure vents aren't blocked</li>
-              </Typography>
-            </>
-          ) : (
-            <>
-              <Typography variant="body1" paragraph>
-                Your indoor humidity is higher than recommended levels. Here are some recommendations:
-              </Typography>
-              <Typography variant="body2" component="ul">
-                <li>Run a dehumidifier to reduce moisture</li>
-                <li>Ensure proper ventilation in humid areas like bathrooms and kitchen</li>
-                <li>Check for any water leaks or plumbing issues</li>
-                <li>Use exhaust fans when cooking or showering</li>
-              </Typography>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseActions}>Close</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
-  );
-};
+import NotificationCard from "../../components/NotificationCard";
 
 const NotificationHistory = () => {
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
@@ -270,6 +142,8 @@ const NotificationHistory = () => {
               background: "linear-gradient(to right, #3b82f6, #10b981)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
+              alignItems: "center",
+              textAlign: "center",
             }}
           >
             Notification History
@@ -278,19 +152,21 @@ const NotificationHistory = () => {
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2, mb: 3 }}>
             <Box 
               sx={{ 
-                display: "flex", 
-                alignItems: "center", 
-                cursor: "pointer" 
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
+                p: 1,
               }}
               onClick={handleDateSortClick}
             >
-              <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+              <Typography variant="body2" sx={{ color: "#fff" }}>
                 Date
               </Typography>
               {sortOrder === "desc" ? (
-                <ArrowDownward sx={{ color: "#94a3b8", fontSize: 16, ml: 0.5 }} />
+                <ArrowDownward sx={{ color: "#fff", fontSize: 20, ml: 0.5 }} />
               ) : (
-                <ArrowUpward sx={{ color: "#94a3b8", fontSize: 16, ml: 0.5 }} />
+                <ArrowUpward sx={{ color: "#fff", fontSize: 20, ml: 0.5 }} />
               )}
             </Box>
             <Menu
@@ -309,7 +185,7 @@ const NotificationHistory = () => {
             </Menu>
             
             <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Typography variant="body2" sx={{ color: "#94a3b8", mr: 1 }}>
+              <Typography variant="body2" sx={{ color: "#fff", mr: 1 }}>
                 Filter by
               </Typography>
               <Chip
@@ -318,12 +194,13 @@ const NotificationHistory = () => {
                 deleteIcon={<ArrowDropDown />}
                 onDelete={handleFilterClick}
                 sx={{
-                  bgcolor: "#334155",
+                  bgcolor: "transparent",
                   color: "white",
                   borderRadius: "16px",
                   "& .MuiChip-deleteIcon": {
                     color: "white",
                   },
+                  border: "2px solid #fff",
                 }}
               />
               <Menu
@@ -338,7 +215,7 @@ const NotificationHistory = () => {
             </Box>
           </Box>
           
-          <Typography variant="body2" sx={{ color: "#94a3b8", mb: 2 }}>
+          <Typography variant="body2" sx={{ color: "#94FFC1", mb: 2 }}>
             Last update: 10 minutes ago
           </Typography>
 
@@ -354,8 +231,8 @@ const NotificationHistory = () => {
           ))}
         </Box>
         
-        <BottomNavigation />
       </Box>
+      <BottomNavigation />
     </Box>
   );
 };
