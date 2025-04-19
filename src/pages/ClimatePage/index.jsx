@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Grid, Box, Container } from "@mui/material";
 import BottomNavigation from "../../components/BottomNavigation";
 import TemperatureDial from "../../components/TemperatureDial";
@@ -16,6 +17,13 @@ import ReportIcon from "../../assets/report.svg?react";
 const ClimatePage = () => {
   const inside_temperature = 30;
   const inside_humidity = 49;
+  const navigate = useNavigate();
+  const handleViewTempClick = () => {
+    navigate("/temperature");
+  };
+  const handleViewHumidClick = () => {
+    navigate("/humidity");
+  };
 
   return (
     <Box
@@ -109,13 +117,13 @@ const ClimatePage = () => {
               </Grid>
             </Grid>
             <Grid container spacing={10} alignContent={"center"} justifyContent="center" marginTop={4}>
-              <Grid item>
+              <Grid item onClick={() => handleViewHumidClick()} sx={{ cursor: "pointer" }}>
                 <ReportButton
                   name="Humidity Report"
                   icon={<ReportIcon style={{ width: 30, height: 30 }} />}
                 />
               </Grid>
-              <Grid item>
+              <Grid item onClick={() => handleViewTempClick()} sx={{ cursor: "pointer" }}>
                 <ReportButton
                   name="Temps Report"
                   icon={<ReportIcon style={{ width: 30, height: 30 }} />}
