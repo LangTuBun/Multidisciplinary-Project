@@ -3,6 +3,8 @@ import { Route, Routes } from "react-router-dom";
 import RoomPage from "./pages/RoomPage";
 import HistoryPage from "./pages/HistoryPage";
 import ClimatePage from "./pages/ClimatePage";
+import HumidityPage from "./pages/HumidityPage";
+import TemperaturePage from "./pages/TemperaturePage";
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
       <Route path="/room" element={<RoomPage />} />
       <Route path="/history" element={<HistoryPage />} />
       <Route path="/settings" element={<MainPage />} />
+      <Route path="/humidity" element={<HumidityPage />} />
+      <Route path="/temperature" element={<TemperaturePage />} />
     </Routes>
   );
 }
