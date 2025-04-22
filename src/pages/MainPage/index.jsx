@@ -1,20 +1,12 @@
-import React from "react";
-import {
-  Box,
-  Typography,
-  Avatar,
-  Card,
-  Container,
-  AvatarGroup,
-} from "@mui/material";
-import { Home, Power, RotateLeft, Person } from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
+import { Box, Typography, Avatar, Container } from "@mui/material";
 import WeatherWidget from "../../components/WeatherWidget";
 import RoomCard from "../../components/RoomCard";
 import BottomNavigation from "../../components/BottomNavigation";
 
-// Import Images
+// Import placeholder images
+import defaultRoomImage from "../../assets/living-room.jpg";
 import masterBedroomImage from "../../assets/master-bedroom.jpg";
-import livingRoomImage from "../../assets/living-room.jpg";
 
 const avatars = [
   "/avatar/meg.jpg",
@@ -23,10 +15,48 @@ const avatars = [
 ];
 
 const MainPage = () => {
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setLoading(true);
+        // Use the correct API endpoint
+        const response = await fetch('http://localhost:8000/api/main/room');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Rooms data:", data); // Debug logging
+        setRooms(data);
+      } catch (err) {
+        console.error("Error fetching rooms:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
+  // Map room images based on room name
+  const getRoomImage = (roomName) => {
+    if (roomName === "Master Bedroom") {
+      return masterBedroomImage;
+    }
+    return defaultRoomImage;
+  };
+
+  console.log("Rendering with rooms:", rooms); // Debug logging
+
   return (
     <Box
       sx={{
-        // width: "100vw",
         height: "100vh",
         display: "flex",
         justifyContent: "center",
@@ -51,7 +81,7 @@ const MainPage = () => {
           sx={{
             flexGrow: 1,
             overflowY: "auto",
-            pr: 1, // optional: show scrollbar without overlaying content
+            pr: 1,
           }}
         >
           <Container
@@ -84,25 +114,29 @@ const MainPage = () => {
 
             {/* Room Cards */}
             <Box sx={{ mt: 4, width: "100%" }}>
-              <RoomCard
-                image={masterBedroomImage}
-                name="Master Bedroom"
-                deviceCount={3}
-                room_url="master-bedroom"
-              />
-              <RoomCard
-                image={livingRoomImage}
-                name="Living Room"
-                deviceCount={3}
-                room_url="living-room"
-              />
+              {loading ? (
+                <Typography color="white">Loading rooms...</Typography>
+              ) : error ? (
+                <Typography color="error">Error: {error}</Typography>
+              ) : rooms.length === 0 ? (
+                <Typography color="white">No rooms found</Typography>
+              ) : (
+                rooms.map((room) => (
+                  <RoomCard
+                    key={room.id}
+                    image={getRoomImage(room.name)}
+                    name={room.name}
+                    deviceCount={room.device}
+                    room_url={room.name.toLowerCase().replace(/\s+/g, '-')}
+                  />
+                ))
+              )}
             </Box>
-
           </Container>
         </Box>
         <BottomNavigation 
-            position="absolute"
-            bottom={0}
+          position="absolute"
+          bottom={0}
         />
       </Box>
     </Box>
