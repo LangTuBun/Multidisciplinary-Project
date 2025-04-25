@@ -124,10 +124,10 @@ const MainPage = () => {
                 rooms.map((room) => (
                   <RoomCard
                     key={room.id}
+                    id={room.id}
                     image={getRoomImage(room.name)}
                     name={room.name}
                     deviceCount={room.device}
-                    room_url={room.name.toLowerCase().replace(/\s+/g, '-')}
                   />
                 ))
               )}
