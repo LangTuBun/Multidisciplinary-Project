@@ -1,8 +1,128 @@
-import React from 'react';
-import { Box, Typography, Container } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Container, CircularProgress } from '@mui/material';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import WbCloudyIcon from '@mui/icons-material/WbCloudy';
+import ThunderstormIcon from '@mui/icons-material/Thunderstorm';
+import UmbrellaIcon from '@mui/icons-material/Umbrella';
+import AcUnitIcon from '@mui/icons-material/AcUnit';
+
+const API_BASE_URL = "http://localhost:8000";
+
 
 const WeatherWidget = () => {
+  const [weatherData, setWeatherData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchWeatherData = async (latitude, longitude) => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/main/weather?lat=${latitude}&lon=${longitude}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setWeatherData(data);
+      } catch (err) {
+        console.error("Error fetching weather data:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Get user's current position
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchWeatherData(latitude, longitude);
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          setError("Unable to get location. Using default location.");
+
+          fetchWeatherData(44.34, 10.99);
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by this browser. Using default location.");  
+      fetchWeatherData(44.34, 10.99);
+    }
+  }, []);
+
+
+
+  // Get appropriate weather icon based on weather description
+  const getWeatherIcon = (description) => {
+    const desc = description ? description.toLowerCase() : '';
+    
+    if (desc.includes('sun') || desc.includes('clear')) {
+      return <WbSunnyIcon sx={{ mr: 1, color: 'orange' }} />;
+    } else if (desc.includes('rain') || desc.includes('shower')) {
+      return <UmbrellaIcon sx={{ mr: 1, color: 'lightblue' }} />;
+    } else if (desc.includes('thunder') || desc.includes('storm')) {
+      return <ThunderstormIcon sx={{ mr: 1, color: 'lightblue' }} />;
+    } else if (desc.includes('snow') || desc.includes('ice')) {
+      return <AcUnitIcon sx={{ mr: 1, color: 'white' }} />;
+    } else {
+      return <WbCloudyIcon sx={{ mr: 1, color: 'lightgray' }} />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <Container 
+        maxWidth="sm" 
+        sx={{ 
+          background: "linear-gradient(to right, #3b82f6, #10b981)",
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          borderRadius: 3, 
+          p: 2,
+          color: 'white',
+          height: 100
+        }}
+      >
+        <CircularProgress color="inherit" size={30} />
+      </Container>
+    );
+  }
+
+  if (error || !weatherData) {
+    return (
+      <Container 
+        maxWidth="sm" 
+        sx={{ 
+          background: "linear-gradient(to right, #3b82f6, #10b981)",
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          borderRadius: 3, 
+          p: 2,
+          color: 'white'
+        }}
+      >
+        <Box>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+            Weather
+          </Typography>
+          <Typography variant="h6">
+            Unavailable
+          </Typography>
+        </Box>
+        <Box sx={{ textAlign: 'right' }}>
+          <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+            --°
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
   return (
     <Container 
       maxWidth="sm" 
@@ -11,7 +131,6 @@ const WeatherWidget = () => {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        backgroundColor: '#2C2C2C', 
         borderRadius: 3, 
         p: 2,
         color: 'white'
@@ -20,15 +139,15 @@ const WeatherWidget = () => {
       {/* Left Side - Location Info */}
       <Box>
         <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-          My Location
+          {weatherData.location || "My Location"}
         </Typography>
         <Typography variant="h6">
-          Ho Chi Minh City
+          {weatherData.location || "Ho Chi Minh City"}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-          <WbCloudyIcon sx={{ mr: 1, color: 'text.secondary' }} />
-          <Typography variant="body2" color="text.secondary">
-            Partially Cloudy
+          {getWeatherIcon(weatherData.weather)}
+          <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
+            {weatherData.weather || "Partially Cloudy"}
           </Typography>
         </Box>
       </Box>
@@ -36,10 +155,10 @@ const WeatherWidget = () => {
       {/* Right Side - Temperature Info */}
       <Box sx={{ textAlign: 'right' }}>
         <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
-          26°
+          {Math.round(weatherData.temperature)}°
         </Typography>
         <Typography variant="body2">
-          H: 29° L: 22°
+          H: {Math.round(weatherData.high)}° L: {Math.round(weatherData.low)}°
         </Typography>
       </Box>
     </Container>
