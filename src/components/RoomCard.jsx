@@ -2,14 +2,19 @@ import React from 'react';
 import { useNavigate } from "react-router-dom";
 import { Typography, Box, Card, CardMedia, CardContent } from '@mui/material';
 
-const RoomCard = ({ image, name, deviceCount }) => {
+const RoomCard = ({ image, name, deviceCount, id }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/room', { state: { name: name } });
+    // Now we navigate with the room ID in the URL and also pass state
+    navigate(`/room/${id}`, { 
+      state: { 
+        name: name,
+        roomId: id 
+      } 
+    });
   };
   
-
   return (
     <Card 
       sx={{
@@ -65,7 +70,7 @@ const RoomCard = ({ image, name, deviceCount }) => {
             {name}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ color: 'gray' }}>
-            {deviceCount} Devices
+            {deviceCount} {deviceCount === 1 ? "Device" : "Devices"}
           </Typography>
         </CardContent>
       </Box>
