@@ -18,6 +18,7 @@ import ClimateIcon from '../../assets/climate.svg?react';
 import masterBedroomImage from "../../assets/master-bedroom.jpg";
 
 const RoomPage = () => {
+
     const navigate = useNavigate();
     const location = useLocation(); // get the name from URL
     const { name } = location.state || {};
@@ -62,7 +63,7 @@ const RoomPage = () => {
                     }}
                 />
                 <IconButton
-                    onClick={() => window.history.back()}
+                    onClick={() => navigate('/')}
                     sx={{
                     position: "absolute",
                     top: 30,
@@ -96,7 +97,7 @@ const RoomPage = () => {
                     mb: 3,
                     }}
                 >
-                    <Box sx={{ py: 2, display: "flex", justifyContent: "space-between", width: "100%" }}> 
+                    <Box sx={{ py: 2, display: "flex", justifyContent: "center", width: "100%" }}> 
                         <Typography
                             variant="h3"
                             fontWeight="bold"
