@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Avatar, Container } from "@mui/material";
+import { Box, Typography, Avatar, Container, Grid, useMediaQuery, useTheme } from "@mui/material";
 import WeatherWidget from "../../components/WeatherWidget";
 import RoomCard from "../../components/RoomCard";
 import BottomNavigation from "../../components/BottomNavigation";
 
-// Import placeholder images
 import defaultRoomImage from "../../assets/living-room.jpg";
 import masterBedroomImage from "../../assets/master-bedroom.jpg";
 
@@ -18,6 +17,8 @@ const MainPage = () => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -31,7 +32,6 @@ const MainPage = () => {
         }
         
         const data = await response.json();
-        console.log("Rooms data:", data); // Debug logging
         setRooms(data);
       } catch (err) {
         console.error("Error fetching rooms:", err);
@@ -52,26 +52,30 @@ const MainPage = () => {
     return defaultRoomImage;
   };
 
-  console.log("Rendering with rooms:", rooms); // Debug logging
-
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "100vh",
+        height: "100%", 
         display: "flex",
         justifyContent: "center",
+        alignItems: "center",
         bgcolor: "#1E1E1E",
+        width: "100%",
       }}
     >
       <Box
         sx={{
-          width: "calc(100vh * 9 / 16)",
+          width: { xs: "100%", sm: "90%", md: "calc(100vh * 9 / 16)" }, // Responsive width
+          maxWidth: "500px", // Maximum width constraint
+          minHeight: "100vh",
+          height: "100%",
           background: "linear-gradient(to bottom, #202A32 0% 70%, #2C65DB 80%, #4BF191 90% 100%)",
           color: "white",
           position: "relative",
-          overflowY: "scroll",
+          overflowY: "auto",
           paddingTop: 1,
-          borderRadius: 4,
+          borderRadius: { xs: 0, sm: 4 }, // No border radius on small screens
           "&::-webkit-scrollbar": {
             display: "none",
           },
@@ -81,22 +85,29 @@ const MainPage = () => {
           sx={{
             flexGrow: 1,
             overflowY: "auto",
-            pr: 1,
+            pr: { xs: 0, sm: 1 }, // Less padding on small screens
+            pb: { xs: 10, sm: 12 }, // Extra padding for bottom navigation
           }}
         >
           <Container
             maxWidth="sm"
             sx={{
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
               flexDirection: "column",
               mb: 3,
+              px: { xs: 2, sm: 3 }, // Responsive padding
             }}
           >
-            <Box sx={{ py: 2, display: "flex", justifyContent: "space-between", width: "100%" }}> 
+            {/* Header with Welcome and Avatar */}
+            <Box sx={{ 
+              py: { xs: 1.5, sm: 2 }, // Responsive padding
+              display: "flex", 
+              justifyContent: "space-between", 
+              width: "100%",
+              alignItems: "center" 
+            }}> 
               <Typography
-                variant="h3"
+                variant={isSmallScreen ? "h5" : "h4"}  // Responsive text size
                 fontWeight="bold"
                 sx={{
                   background: "linear-gradient(to right, #3b82f6, #10b981)",
@@ -106,14 +117,31 @@ const MainPage = () => {
               >
                 Welcome
               </Typography>
-              <Avatar src={avatars[2]} />
+              <Avatar src={avatars[2]} sx={{ width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 } }} />
             </Box>
 
             {/* Weather Widget */}
-            <WeatherWidget />
+            <Box sx={{ 
+              width: "100%", 
+              mb: { xs: 2, sm: 3 },
+              mt: { xs: 1, sm: 1 }
+            }}>
+              <WeatherWidget />
+            </Box>
+
+            {/* Section Title for Rooms */}
+            <Box sx={{ mb: { xs: 1, sm: 2 }, mt: { xs: 1, sm: 1 } }}>
+              <Typography 
+                variant={isSmallScreen ? "subtitle1" : "h6"}
+                fontWeight="medium"
+                sx={{ color: 'white' }}
+              >
+                Your Rooms
+              </Typography>
+            </Box>
 
             {/* Room Cards */}
-            <Box sx={{ mt: 4, width: "100%" }}>
+            <Box sx={{ width: "100%" }}>
               {loading ? (
                 <Typography color="white">Loading rooms...</Typography>
               ) : error ? (
@@ -121,23 +149,23 @@ const MainPage = () => {
               ) : rooms.length === 0 ? (
                 <Typography color="white">No rooms found</Typography>
               ) : (
-                rooms.map((room) => (
-                  <RoomCard
-                    key={room.id}
-                    id={room.id}
-                    image={getRoomImage(room.name)}
-                    name={room.name}
-                    deviceCount={room.device}
-                  />
-                ))
+                <Grid container spacing={{ xs: 1, sm: 2 }}>
+                  {rooms.map((room) => (
+                    <Grid item xs={12} key={room.id}>
+                      <RoomCard
+                        id={room.id}
+                        image={getRoomImage(room.name)}
+                        name={room.name}
+                        deviceCount={room.device}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
               )}
             </Box>
           </Container>
         </Box>
-        <BottomNavigation 
-          position="absolute"
-          bottom={0}
-        />
+        <BottomNavigation />
       </Box>
     </Box>
   );

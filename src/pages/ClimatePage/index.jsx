@@ -103,7 +103,7 @@ const ClimatePage = () => {
             <Grid container spacing={4} alignContent={"center"} justifyContent="center">
               <Grid item>
                 <InformationCard
-                  name="Inside Humi."
+                  name="Inside Humidity."
                   icon={<HumidityIcon style={{ width: 50, height: 50 }} />}
                   data={inside_humidity + "%"}
                 ></InformationCard>

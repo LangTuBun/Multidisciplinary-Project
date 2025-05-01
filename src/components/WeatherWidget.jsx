@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Container, CircularProgress } from '@mui/material';
+import { Box, Typography, Container, CircularProgress, Divider } from '@mui/material';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import WbCloudyIcon from '@mui/icons-material/WbCloudy';
 import ThunderstormIcon from '@mui/icons-material/Thunderstorm';
 import UmbrellaIcon from '@mui/icons-material/Umbrella';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
+import WaterDropIcon from '@mui/icons-material/WaterDrop';
 
 const API_BASE_URL = "http://localhost:8000";
 
@@ -129,36 +130,59 @@ const WeatherWidget = () => {
       sx={{ 
         background: "linear-gradient(to right, #3b82f6, #10b981)",
         display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
+        flexDirection: 'column',
         borderRadius: 3, 
         p: 2,
         color: 'white'
       }}
     >
-      {/* Left Side - Location Info */}
-      <Box>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-          {weatherData.location || "My Location"}
-        </Typography>
-        <Typography variant="h6">
-          {weatherData.location || "Ho Chi Minh City"}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-          {getWeatherIcon(weatherData.weather)}
-          <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
-            {weatherData.weather || "Partially Cloudy"}
+      {/* Top Section - Main Weather Info */}
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        width: '100%',
+        mb: 1
+      }}>
+        {/* Left Side - Location Info */}
+        <Box>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+            {weatherData.location || "My Location"}
+          </Typography>
+          <Typography variant="h6">
+            {weatherData.location || "Ho Chi Minh City"}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+            {getWeatherIcon(weatherData.weather)}
+            <Typography variant="body2" sx={{ textTransform: 'capitalize', color: 'white' }}>
+              {weatherData.weather || "Partially Cloudy"}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Right Side - Temperature Info */}
+        <Box sx={{ textAlign: 'right' }}>
+          <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+            {Math.round(weatherData.temperature)}°
+          </Typography>
+          <Typography variant="body2">
+            H: {Math.round(weatherData.high)}° L: {Math.round(weatherData.low)}°
           </Typography>
         </Box>
       </Box>
-
-      {/* Right Side - Temperature Info */}
-      <Box sx={{ textAlign: 'right' }}>
-        <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
-          {Math.round(weatherData.temperature)}°
-        </Typography>
-        <Typography variant="body2">
-          H: {Math.round(weatherData.high)}° L: {Math.round(weatherData.low)}°
+      
+      {/* Divider */}
+      <Divider sx={{ my: 1, bgcolor: 'rgba(255, 255, 255, 0.3)' }} />
+      
+      {/* Bottom Section - Humidity */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        mt: 1 
+      }}>
+        <WaterDropIcon sx={{ mr: 1, color: '#90caf9' }} />
+        <Typography variant="body1">
+          Humidity: {weatherData.humidity || 0}%
         </Typography>
       </Box>
     </Container>
