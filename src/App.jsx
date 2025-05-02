@@ -8,6 +8,7 @@ import TemperaturePage from "./pages/TemperaturePage";
 import WarningPage from "./pages/WarningPage";
 import { useEffect } from "react";
 import socketInstance from "./socket";
+import LoginPage from "./pages/LoginPage";
 
 function App() {
   const navigate = useNavigate() ;
@@ -28,7 +29,7 @@ function App() {
 
   return (
     <Routes>
-      <Route path="*" element={<MainPage />} />
+      <Route path="/main" element={<MainPage />} />
       <Route path="/room/climate" element={<ClimatePage />} />
       <Route path="/room" element={<RoomPage />} />
       <Route path="/history" element={<HistoryPage />} />
@@ -36,6 +37,7 @@ function App() {
       <Route path="/humidity" element={<HumidityPage />} />
       <Route path="/temperature" element={<TemperaturePage />} />
       <Route path="/warning" element={<WarningPage />} />
+      <Route path="*" element={<LoginPage />} />
     </Routes>
   );
 }

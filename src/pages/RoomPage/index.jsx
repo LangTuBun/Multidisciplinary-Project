@@ -63,7 +63,7 @@ const RoomPage = () => {
                     }}
                 />
                 <IconButton
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/main')}
                     sx={{
                     position: "absolute",
                     top: 30,

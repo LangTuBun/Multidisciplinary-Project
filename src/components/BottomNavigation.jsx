@@ -48,7 +48,7 @@ const BottomNavigation = () => {
         />
         <BottomNavigationAction
           icon={<Home sx={{ fontSize: 32, color: "#fff" }} />}
-          href='/'
+          href='/main'
           sx={{
             background: "transparent",
             borderRadius: "50px",
@@ -62,6 +62,7 @@ const BottomNavigation = () => {
         />
         <BottomNavigationAction 
           icon={<PowerSettingsNew sx={{ fontSize: 32, color: "#fff" }} />}
+          href='/'
           sx={{
             background: "transparent",
             borderRadius: "50px",
