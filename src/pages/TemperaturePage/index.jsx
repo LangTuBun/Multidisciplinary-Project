@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
   Select,
   MenuItem,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import {
@@ -17,7 +18,8 @@ import {
 } from "recharts";
 import BottomNavigation from "../../components/BottomNavigation";
 
-const indoorData = [
+// Static indoor data for 24 hours
+const indoorData24h = [
   { time: "3", value: 22 },
   { time: "6", value: 24 },
   { time: "9", value: 27 },
@@ -28,19 +30,120 @@ const indoorData = [
   { time: "24", value: 23 },
 ];
 
-const outdoorData = [
-  { time: "3", value: 15 },
-  { time: "6", value: 18 },
-  { time: "9", value: 22 },
-  { time: "12", value: 26 },
-  { time: "15", value: 30 },
-  { time: "18", value: 28 },
-  { time: "21", value: 24 },
-  { time: "24", value: 18 },
+// Static indoor data for 7 days (using day names instead of hour numbers)
+const indoorData7d = [
+  { time: "Mon", value: 24 },
+  { time: "Tue", value: 25 },
+  { time: "Wed", value: 27 },
+  { time: "Thu", value: 29 },
+  { time: "Fri", value: 28 },
+  { time: "Sat", value: 26 },
+  { time: "Sun", value: 25 },
 ];
 
 export default function TemperaturePage() {
-  const [range, setRange] = React.useState("24hrs");
+  const [range, setRange] = useState("24hrs");
+  const [outdoorData, setOutdoorData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [outdoorStats, setOutdoorStats] = useState({
+    average: "--",
+    low: "--",
+    high: "--",
+  });
+  const [indoorData, setIndoorData] = useState(indoorData24h);
+
+  // Update indoor data when range changes
+  useEffect(() => {
+    setIndoorData(range === "24hrs" ? indoorData24h : indoorData7d);
+  }, [range]);
+
+  useEffect(() => {
+    const fetchWeatherData = async (latitude, longitude) => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:8000/api/main/weather?lat=${latitude}&lon=${longitude}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Generate data based on selected range
+        let genOutdoorData = [];
+        
+        if (range === "24hrs") {
+          // Generate 24-hour data
+          const baseTemp = data.temperature || 25;
+          genOutdoorData = [
+            { time: "3", value: Math.round(baseTemp - 5) },
+            { time: "6", value: Math.round(baseTemp - 3) },
+            { time: "9", value: Math.round(baseTemp) },
+            { time: "12", value: Math.round(baseTemp + 3) },
+            { time: "15", value: Math.round(baseTemp + 5) },
+            { time: "18", value: Math.round(baseTemp + 2) },
+            { time: "21", value: Math.round(baseTemp - 1) },
+            { time: "24", value: Math.round(baseTemp - 4) },
+          ];
+        } else {
+          // Generate 7-day data with more variation
+          const baseTemp = data.temperature || 25;
+          genOutdoorData = [
+            { time: "Mon", value: Math.round(baseTemp - 2) },
+            { time: "Tue", value: Math.round(baseTemp - 1) },
+            { time: "Wed", value: Math.round(baseTemp + 1) },
+            { time: "Thu", value: Math.round(baseTemp + 3) },
+            { time: "Fri", value: Math.round(baseTemp + 2) },
+            { time: "Sat", value: Math.round(baseTemp) },
+            { time: "Sun", value: Math.round(baseTemp - 1) },
+          ];
+        }
+        
+        setOutdoorData(genOutdoorData);
+        
+        // Calculate stats
+        const values = genOutdoorData.map(item => item.value);
+        const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        
+        setOutdoorStats({
+          average: Math.round(avg),
+          low: min,
+          high: max,
+        });
+      } catch (err) {
+        console.error("Error fetching weather data:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Get user's current position
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchWeatherData(latitude, longitude);
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          setError("Unable to get location. Using default location.");
+          fetchWeatherData(44.34, 10.99); // Default coordinates
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by this browser. Using default location.");  
+      fetchWeatherData(44.34, 10.99); // Default coordinates
+    }
+  }, [range]); // Re-fetch when range changes
+
+  // Calculate indoor stats based on current indoorData
+  const indoorAvg = Math.round(indoorData.reduce((sum, item) => sum + item.value, 0) / indoorData.length);
+  const indoorLow = Math.min(...indoorData.map(item => item.value));
+  const indoorHigh = Math.max(...indoorData.map(item => item.value));
 
   return (
     <Box
@@ -53,7 +156,7 @@ export default function TemperaturePage() {
     >
       <Box
         sx={{
-          width: "calc(100vh * 9 / 16)",
+          width: { xs: "100%", sm: "450px" },
           maxWidth: "450px",
           bgcolor: "#202a32",
           color: "white",
@@ -113,7 +216,10 @@ export default function TemperaturePage() {
           </Typography>
           <Select
             value={range}
-            onChange={(e) => setRange(e.target.value)}
+            onChange={(e) => {
+              setRange(e.target.value);
+              setLoading(true); // Show loading while data updates
+            }}
             sx={{
               bgcolor: "#1c1f2a",
               color: "white",
@@ -141,7 +247,7 @@ export default function TemperaturePage() {
                   Average:
                 </Typography>
                 <Typography variant="body2" color="#fff" mb={1}>
-                  26°C
+                  {indoorAvg}°C
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -149,7 +255,7 @@ export default function TemperaturePage() {
                   Low:
                 </Typography>
                 <Typography variant="body2" color="#2C65DB" mb={1}>
-                  19°C
+                  {indoorLow}°C
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -157,7 +263,7 @@ export default function TemperaturePage() {
                   High:
                 </Typography>
                 <Typography variant="body2" color="#F58B45" mb={1}>
-                  35°C
+                  {indoorHigh}°C
                 </Typography>
               </Box>
             </Box>
@@ -197,6 +303,7 @@ export default function TemperaturePage() {
                     color: "white",
                   }}
                   labelStyle={{ color: "white" }}
+                  formatter={(value) => [`${value}°C`, "Temperature"]}
                 />
                 <Bar
                   dataKey="value"
@@ -211,7 +318,7 @@ export default function TemperaturePage() {
         <Box px={2} py={1}>
           <Box sx={{ display: "flex" }}>
             <Typography variant="body1" fontWeight={600} gutterBottom>
-              🏠 Indoor
+              🌡️ Outdoor
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", ml: 2 }}>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -219,7 +326,7 @@ export default function TemperaturePage() {
                   Average:
                 </Typography>
                 <Typography variant="body2" color="#fff" mb={1}>
-                  24°C
+                  {outdoorStats.average}°C
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -227,7 +334,7 @@ export default function TemperaturePage() {
                   Low:
                 </Typography>
                 <Typography variant="body2" color="#2C65DB" mb={1}>
-                  12°C
+                  {outdoorStats.low}°C
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -235,7 +342,7 @@ export default function TemperaturePage() {
                   High:
                 </Typography>
                 <Typography variant="body2" color="#F58B45" mb={1}>
-                  32°C
+                  {outdoorStats.high}°C
                 </Typography>
               </Box>
             </Box>
@@ -248,31 +355,53 @@ export default function TemperaturePage() {
               boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
             }}
           >
-            <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={outdoorData}>
-                <defs>
-                  <linearGradient id="gradient" x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stopColor="#3467DA" />
-                    <stop offset="100%" stopColor="#F58A46" />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="time" stroke="#94a3b8" axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 40]} stroke="#94a3b8" axisLine={false} tickLine={false} tickFormatter={(value) => `${value}°C`}/>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "none",
-                    color: "white",
-                  }}
-                  labelStyle={{ color: "white" }}
-                />
-                <Bar
-                  dataKey="value"
-                  fill="url(#gradient)"
-                  radius={[20, 20, 20, 20]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 160 }}>
+                <CircularProgress color="primary" />
+              </Box>
+            ) : error ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 160 }}>
+                <Typography color="error">Failed to load outdoor data</Typography>
+              </Box>
+            ) : (
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={outdoorData}>
+                  <defs>
+                    <linearGradient id="gradientOutdoor" x1="0" y1="1" x2="0" y2="0">
+                      <stop offset="0%" stopColor="#3467DA" />
+                      <stop offset="100%" stopColor="#F58A46" />
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="#94a3b8" 
+                    axisLine={false} 
+                    tickLine={false} 
+                  />
+                  <YAxis 
+                    domain={[0, 40]} 
+                    stroke="#94a3b8" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tickFormatter={(value) => `${value}°C`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e293b",
+                      border: "none",
+                      color: "white",
+                    }}
+                    labelStyle={{ color: "white" }}
+                    formatter={(value) => [`${value}°C`, "Temperature"]}
+                  />
+                  <Bar
+                    dataKey="value"
+                    fill="url(#gradientOutdoor)"
+                    radius={[20, 20, 20, 20]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </Box>
         </Box>
       </Box>

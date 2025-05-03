@@ -30,8 +30,8 @@ function App() {
   return (
     <Routes>
       <Route path="/main" element={<MainPage />} />
+      <Route path="/room/:id" element={<RoomPage />} />
       <Route path="/room/climate" element={<ClimatePage />} />
-      <Route path="/room" element={<RoomPage />} />
       <Route path="/history" element={<HistoryPage />} />
       <Route path="/settings" element={<MainPage />} />
       <Route path="/humidity" element={<HumidityPage />} />

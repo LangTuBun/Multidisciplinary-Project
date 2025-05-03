@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
   Select,
   MenuItem,
   IconButton,
+  CircularProgress
 } from "@mui/material";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import {
@@ -17,7 +18,8 @@ import {
 } from "recharts";
 import BottomNavigation from "../../components/BottomNavigation";
 
-const indoorData = [
+// Static indoor data for 24 hours
+const indoorData24h = [
   { time: "3", value: 55 },
   { time: "6", value: 65 },
   { time: "9", value: 75 },
@@ -28,19 +30,154 @@ const indoorData = [
   { time: "24", value: 55 },
 ];
 
-const outdoorData = [
-  { time: "3", value: 30 },
-  { time: "6", value: 35 },
-  { time: "9", value: 40 },
-  { time: "12", value: 45 },
-  { time: "15", value: 70 },
-  { time: "18", value: 75 },
-  { time: "21", value: 65 },
-  { time: "24", value: 50 },
+// Static indoor data for 7 days
+const indoorData7d = [
+  { time: "Mon", value: 60 },
+  { time: "Tue", value: 68 },
+  { time: "Wed", value: 72 },
+  { time: "Thu", value: 78 },
+  { time: "Fri", value: 75 },
+  { time: "Sat", value: 70 },
+  { time: "Sun", value: 65 },
 ];
 
 export default function HumidityPage() {
-  const [range, setRange] = React.useState("24hrs");
+  const [range, setRange] = useState("24hrs");
+  const [indoorData, setIndoorData] = useState(indoorData24h);
+  const [outdoorData, setOutdoorData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [outdoorStats, setOutdoorStats] = useState({
+    average: "--",
+    low: "--",
+    high: "--",
+  });
+
+  // Update indoor data when range changes
+  useEffect(() => {
+    setIndoorData(range === "24hrs" ? indoorData24h : indoorData7d);
+  }, [range]);
+
+  // Calculate indoor stats
+  const indoorAvg = Math.round(indoorData.reduce((sum, item) => sum + item.value, 0) / indoorData.length);
+  const indoorLow = Math.min(...indoorData.map(item => item.value));
+  const indoorHigh = Math.max(...indoorData.map(item => item.value));
+
+  useEffect(() => {
+    const fetchWeatherData = async (latitude, longitude) => {
+      try {
+        setLoading(true);
+        
+        // Fetch from your weather API endpoint instead of the humidity-specific endpoint
+        const response = await fetch(`http://localhost:8000/api/main/weather?lat=${latitude}&lon=${longitude}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Extract humidity value from weather data
+        // Note: Assuming your weather API returns humidity in the response
+        const baseHumidity = data.humidity || 50;
+        
+        let genOutdoorData = [];
+        
+        if (range === "24hrs") {
+          // Generate 24-hour data based on current humidity with some variation
+          genOutdoorData = [
+            { time: "3", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 15))) },
+            { time: "6", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 10))) },
+            { time: "9", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 5))) },
+            { time: "12", value: Math.max(0, Math.min(100, Math.round(baseHumidity))) },
+            { time: "15", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 5))) },
+            { time: "18", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 10))) },
+            { time: "21", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 5))) },
+            { time: "24", value: Math.max(0, Math.min(100, Math.round(baseHumidity))) },
+          ];
+        } else {
+          // Generate 7-day data with more variation
+          genOutdoorData = [
+            { time: "Mon", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 10))) },
+            { time: "Tue", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 5))) },
+            { time: "Wed", value: Math.max(0, Math.min(100, Math.round(baseHumidity))) },
+            { time: "Thu", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 8))) },
+            { time: "Fri", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 12))) },
+            { time: "Sat", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 5))) },
+            { time: "Sun", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 3))) },
+          ];
+        }
+        
+        setOutdoorData(genOutdoorData);
+        
+        // Calculate outdoor stats
+        const values = genOutdoorData.map(item => item.value);
+        const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        
+        setOutdoorStats({
+          average: Math.round(avg),
+          low: min,
+          high: max,
+        });
+      } catch (err) {
+        console.error("Error fetching weather data:", err);
+        setError(err.message);
+        
+        // Fallback to static data in case of error
+        const fallbackData = range === "24hrs" ? [
+          { time: "3", value: 30 },
+          { time: "6", value: 35 },
+          { time: "9", value: 40 },
+          { time: "12", value: 45 },
+          { time: "15", value: 70 },
+          { time: "18", value: 75 },
+          { time: "21", value: 65 },
+          { time: "24", value: 50 },
+        ] : [
+          { time: "Mon", value: 35 },
+          { time: "Tue", value: 40 },
+          { time: "Wed", value: 50 },
+          { time: "Thu", value: 65 },
+          { time: "Fri", value: 70 },
+          { time: "Sat", value: 60 },
+          { time: "Sun", value: 45 },
+        ];
+        
+        setOutdoorData(fallbackData);
+        
+        // Calculate fallback stats
+        const values = fallbackData.map(item => item.value);
+        const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+        setOutdoorStats({
+          average: Math.round(avg),
+          low: Math.min(...values),
+          high: Math.max(...values),
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Get user's current position
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchWeatherData(latitude, longitude);
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          setError("Unable to get location. Using default location.");
+          fetchWeatherData(44.34, 10.99); // Default coordinates
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by this browser. Using default location.");  
+      fetchWeatherData(44.34, 10.99); // Default coordinates
+    }
+  }, [range]); // Re-fetch when range changes
 
   return (
     <Box
@@ -53,7 +190,7 @@ export default function HumidityPage() {
     >
       <Box
         sx={{
-          width: "calc(100vh * 9 / 16)",
+          width: { xs: "100%", sm: "450px" },
           maxWidth: "450px",
           bgcolor: "#202a32",
           color: "white",
@@ -113,7 +250,10 @@ export default function HumidityPage() {
           </Typography>
           <Select
             value={range}
-            onChange={(e) => setRange(e.target.value)}
+            onChange={(e) => {
+              setRange(e.target.value);
+              setLoading(true); // Show loading while data updates
+            }}
             sx={{
               bgcolor: "#1c1f2a",
               color: "white",
@@ -141,7 +281,7 @@ export default function HumidityPage() {
                   Average:
                 </Typography>
                 <Typography variant="body2" color="#fff" mb={1}>
-                  60%
+                  {indoorAvg}%
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -149,7 +289,7 @@ export default function HumidityPage() {
                   Low:
                 </Typography>
                 <Typography variant="body2" color="#2C65DB" mb={1}>
-                  50%
+                  {indoorLow}%
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -157,7 +297,7 @@ export default function HumidityPage() {
                   High:
                 </Typography>
                 <Typography variant="body2" color="#F58B45" mb={1}>
-                  82%
+                  {indoorHigh}%
                 </Typography>
               </Box>
             </Box>
@@ -174,13 +314,10 @@ export default function HumidityPage() {
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={indoorData}>
                 <defs>
-                  <linearGradient id="gradient" x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stop-color="#F58A46" />
-                    <stop offset="25%" stop-color="#FFD700" />
-                    <stop offset="50%" stop-color="#32CD32" />
-                    <stop offset="75%" stop-color="#1E90FF" />
-                    <stop offset="90%" stop-color="#6A0DAD" />
-                    <stop offset="100%" stop-color="#6A0DAD" />
+                  <linearGradient id="indoorGradient" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#3C8CE7" />
+                    <stop offset="50%" stopColor="#00EAFF" />
+                    <stop offset="100%" stopColor="#FFFFFF" />
                   </linearGradient>
                 </defs>
                 <XAxis
@@ -203,10 +340,11 @@ export default function HumidityPage() {
                     color: "white",
                   }}
                   labelStyle={{ color: "white" }}
+                  formatter={(value) => [`${value}%`, "Humidity"]}
                 />
                 <Bar
                   dataKey="value"
-                  fill="url(#gradient)"
+                  fill="url(#indoorGradient)"
                   radius={[20, 20, 20, 20]}
                 />
               </BarChart>
@@ -225,7 +363,7 @@ export default function HumidityPage() {
                   Average:
                 </Typography>
                 <Typography variant="body2" color="#fff" mb={1}>
-                  60%
+                  {outdoorStats.average}%
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -233,7 +371,7 @@ export default function HumidityPage() {
                   Low:
                 </Typography>
                 <Typography variant="body2" color="#2C65DB" mb={1}>
-                  50%
+                  {outdoorStats.low}%
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1 }}>
@@ -241,7 +379,7 @@ export default function HumidityPage() {
                   High:
                 </Typography>
                 <Typography variant="body2" color="#F58B45" mb={1}>
-                  82%
+                  {outdoorStats.high}%
                 </Typography>
               </Box>
             </Box>
@@ -254,50 +392,54 @@ export default function HumidityPage() {
               boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
             }}
           >
-            <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={outdoorData}>
-                <defs>
-                  <linearGradient id="gradient" x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stop-color="#F58A46" />
-                    <stop offset="25%" stop-color="#FFD700" />
-                    <stop offset="50%" stop-color="#32CD32" />
-                    <stop offset="75%" stop-color="#1E90FF" />
-                    <stop offset="90%" stop-color="#6A0DAD" />
-                    <stop offset="100%" stop-color="#6A0DAD" />
-                  </linearGradient>
-                  <linearGradient id="hoverGradient" x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stopColor="#FF5F6D" />
-                    <stop offset="100%" stopColor="#FFC371" />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="time"
-                  stroke="#94a3b8"
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  domain={[0, 100]}
-                  stroke="#94a3b8"
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(value) => `${value}%`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "none",
-                    color: "white",
-                  }}
-                  labelStyle={{ color: "white" }}
-                />
-                <Bar
-                  dataKey="value"
-                  fill="url(#gradient)"
-                  radius={[20, 20, 20, 20]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 160 }}>
+                <CircularProgress color="primary" />
+              </Box>
+            ) : error ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 160 }}>
+                <Typography color="error">Failed to load outdoor data</Typography>
+              </Box>
+            ) : (
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={outdoorData}>
+                  <defs>
+                    <linearGradient id="outdoorGradient" x1="0" y1="1" x2="0" y2="0">
+                      <stop offset="0%" stopColor="#38A2D7" />
+                      <stop offset="50%" stopColor="#57D0FF" />
+                      <stop offset="100%" stopColor="#8FE9FF" />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="time"
+                    stroke="#94a3b8"
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    stroke="#94a3b8"
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(value) => `${value}%`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e293b",
+                      border: "none",
+                      color: "white",
+                    }}
+                    labelStyle={{ color: "white" }}
+                    formatter={(value) => [`${value}%`, "Humidity"]}
+                  />
+                  <Bar
+                    dataKey="value"
+                    fill="url(#outdoorGradient)"
+                    radius={[20, 20, 20, 20]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </Box>
         </Box>
       </Box>
