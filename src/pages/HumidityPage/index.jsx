@@ -69,7 +69,7 @@ export default function HumidityPage() {
         setLoading(true);
         
         // Fetch from your weather API endpoint instead of the humidity-specific endpoint
-        const response = await fetch(`http://localhost:8000/api/main/weather?lat=${latitude}&lon=${longitude}`);
+        const response = await fetch(`${import.meta.env.VITE_BE_URL}/main/weather?lat=${latitude}&lon=${longitude}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
