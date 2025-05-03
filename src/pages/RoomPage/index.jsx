@@ -17,8 +17,6 @@ import ClimateIcon from '../../assets/climate.svg?react';
 import masterBedroomImage from "../../assets/master-bedroom.jpg";
 import defaultRoomImage from "../../assets/living-room.jpg";
 
-const API_BASE_URL = "http://localhost:8000"; // Update with your actual API base URL
-
 // Equipment type icons mapping
 const EQUIPMENT_ICONS = {
   "Main Light": <MainLightIcon style={{ width: 40, height: 40 }} />,
@@ -56,7 +54,7 @@ useEffect(() => {
           throw new Error("Room ID is missing");
         }
         
-        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}/equipments`);
+        const response = await fetch(`${import.meta.env.VITE_BE_URL}/rooms/${roomId}/equipments`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -105,7 +103,7 @@ useEffect(() => {
       ));
       
       // Send update to API
-      const response = await fetch(`${API_BASE_URL}/api/equipments/${equipmentId}/update/`, {
+      const response = await fetch(`${import.meta.env.VITE_BE_URL}/equipments/${equipmentId}/update/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

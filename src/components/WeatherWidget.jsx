@@ -7,8 +7,6 @@ import UmbrellaIcon from '@mui/icons-material/Umbrella';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 
-const API_BASE_URL = "http://localhost:8000";
-
 
 const WeatherWidget = () => {
   const [weatherData, setWeatherData] = useState(null);
@@ -18,7 +16,7 @@ const WeatherWidget = () => {
   useEffect(() => {
     const fetchWeatherData = async (latitude, longitude) => {
       try {
-        const response = await fetch(`http://localhost:8000/api/main/weather?lat=${latitude}&lon=${longitude}`);
+        const response = await fetch(`${import.meta.env.VITE_BE_URL}/main/weather?lat=${latitude}&lon=${longitude}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);

@@ -25,7 +25,7 @@ const MainPage = () => {
       try {
         setLoading(true);
         // Use the correct API endpoint
-        const response = await fetch('http://localhost:8000/api/main/room');
+        const response = await fetch(`${import.meta.env.VITE_BE_URL}/main/room`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);

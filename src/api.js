@@ -1,10 +1,8 @@
 // src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api'; // adjust for production
-
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: import.meta.env.VITE_BE_URL,
   timeout: 10000,
 });
 
