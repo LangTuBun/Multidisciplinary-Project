@@ -10,9 +10,11 @@ const WarningPage = () => {
     const navigate = useNavigate();
     const location = useLocation(); // get the name from URL
     const { message } = location.state || {};
+    const id = 1;
+    const room_name = "Living room" ;
 
 
-    const handleActionClick = () => { navigate("/room", {name: "Living room"}); };
+    const handleActionClick = () => { navigate(`/room/${id}`, {state: {name: room_name, roomId: id}}); };
 
     return (
         <Box

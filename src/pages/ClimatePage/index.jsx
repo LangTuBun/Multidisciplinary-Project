@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Grid, Box, Container } from "@mui/material";
 import BottomNavigation from "../../components/BottomNavigation";
 import TemperatureDial from "../../components/TemperatureDial";
@@ -12,18 +12,92 @@ import React from "react";
 import InformationCard from "../../components/InformationCard";
 import ReportButton from "../../components/ReportButton";
 import ReportIcon from "../../assets/report.svg?react";
+import { useEffect } from "react";
+import { useState } from "react";
+import { fetchAirQuality, fetchWeatherData } from "../../services/api";
 
 
 const ClimatePage = () => {
-  const inside_temperature = 30;
-  const inside_humidity = 49;
+  const params = useParams();
+  const [ inside_temperature, setInsideTemp ] = useState(30);
+  const [ inside_humidity, setInsideHumidity ] = useState(49);
+  const [ outside_temp, setOutsideTemp ] = useState(30) ;
   const navigate = useNavigate();
   const handleViewTempClick = () => {
-    navigate("/temperature");
+    navigate(`/rooms/${roomId}/temperature`);
   };
   const handleViewHumidClick = () => {
-    navigate("/humidity");
+    navigate(`/rooms/${roomId}/humidity`);
   };
+  const roomId = params.id || (location.state && location.state.roomId);
+
+  const fetchParameters = async () => {
+    try {
+      const response = await fetchAirQuality(roomId) ;
+
+      if (!response.statusText || response.statusText != "OK") {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+
+      const data = response.data ;
+      console.log("Parameters data:", data) ;
+
+      if (!('humidity' in data)) {
+        throw new Error(`Humidity is not provided`)
+      }
+      if (!('temperature' in data)) {
+        throw new Error(`Temperature is not provided`)
+      }
+      
+      setInsideHumidity(data.humidity)
+      setInsideTemp(data.temperature)
+
+    } catch (err) {
+      console.error("Error fetching parameters data:", err);
+    }
+  }
+
+  const _fetchWeatherData = async (latitude, longitude) => {
+    try {
+      const response = await fetchWeatherData(latitude, longitude) ;
+
+      if (!response.statusText || response.statusText != "OK") {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+
+      const data = response.data ;
+      console.log("Weather data:", data) ;
+      if (!('temperature' in data)) {
+        throw new Error(`Temperature is not provided`)
+      }
+
+      setOutsideTemp(data.temperature) ;
+
+    } catch (err) {
+      console.error("Error fetching weather data:", err);
+    }
+  }
+
+  useEffect(() => {
+    console.log("roomId:", roomId)
+    fetchParameters()
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log("latitude, longitude", latitude, longitude)
+          _fetchWeatherData(latitude, longitude);
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          _fetchWeatherData(10.77, 106.66);
+        }
+      );
+    } else {
+      console.log("Geolocation is not supported by this browser. Using default location.");  
+      _fetchWeatherData(10.77, 106.66);
+    }
+  }, [roomId])
 
   return (
     <Box
@@ -98,7 +172,7 @@ const ClimatePage = () => {
                 </Box>
             </Container>
             <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", mb: 2 }}>
-              <TemperatureDial temperature={30} mode="Heating" />
+              <TemperatureDial temperature={outside_temp} mode="Outside" />
             </Box>
             <Grid container spacing={4} alignContent={"center"} justifyContent="center">
               <Grid item>

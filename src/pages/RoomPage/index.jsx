@@ -131,7 +131,8 @@ useEffect(() => {
   };
 
   const handleClimateClick = () => {
-    navigate("/room/climate", { state: { roomId } });
+    console.log(`Room Id at RoomPage: ${roomId}`)
+    navigate(`/room/${roomId}/climate`, { state: { roomId: roomId } });
   };
 
   if (loading) {
@@ -182,7 +183,7 @@ useEffect(() => {
           }}
         />
         <IconButton
-          onClick={() => window.history.back()}
+          onClick={() => navigate("/main")}
           sx={{
             position: "absolute",
             top: 30,

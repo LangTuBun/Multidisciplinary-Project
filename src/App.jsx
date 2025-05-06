@@ -31,11 +31,13 @@ function App() {
     <Routes>
       <Route path="/main" element={<MainPage />} />
       <Route path="/room/:id" element={<RoomPage />} />
-      <Route path="/room/climate" element={<ClimatePage />} />
+      <Route path="/room/:id/climate" element={<ClimatePage />} />
       <Route path="/history" element={<HistoryPage />} />
       <Route path="/settings" element={<MainPage />} />
-      <Route path="/humidity" element={<HumidityPage />} />
-      <Route path="/temperature" element={<TemperaturePage />} />
+      {/* <Route path="/humidity" element={<HumidityPage />} /> */}
+      <Route path="/rooms/:id/humidity" element={<HumidityPage />} />
+      {/* <Route path="/temperature" element={<TemperaturePage />} /> */}
+      <Route path="/rooms/:id/temperature" element={<TemperaturePage />} />
       <Route path="/warning" element={<WarningPage />} />
       <Route path="*" element={<LoginPage />} />
     </Routes>
