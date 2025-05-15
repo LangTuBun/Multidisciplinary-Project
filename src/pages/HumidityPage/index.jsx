@@ -17,6 +17,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import BottomNavigation from "../../components/BottomNavigation";
+import { fetchHumidReport } from "../../services/api";
 
 // Static indoor data for 24 hours
 const indoorData24h = [
@@ -53,15 +54,85 @@ export default function HumidityPage() {
     high: "--",
   });
 
+  const fetchHumidityList = async () => {
+    const response = await fetchHumidReport(1, range) ;
+
+    if (!response.statusText || response.statusText != "OK") {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+
+    const data = response.data ;
+
+    if (!("date" in data) || !("humidity" in data)) {
+      throw new Error("Missing field in response")
+    }
+
+    console.log("Humidity data:", data) ;
+    const convertedData = data.date.map((day, index) => {
+      return {time: day, value: data.humidity[index]}
+    })
+    setIndoorData(convertedData)
+  }
+
   // Update indoor data when range changes
   useEffect(() => {
-    setIndoorData(range === "24hrs" ? indoorData24h : indoorData7d);
+    try {
+      fetchHumidityList() ;
+    } catch (err) {
+      console.log("err", err) ;
+      setIndoorData(range === "24hrs" ? indoorData24h : indoorData7d);
+    }
   }, [range]);
 
   // Calculate indoor stats
   const indoorAvg = Math.round(indoorData.reduce((sum, item) => sum + item.value, 0) / indoorData.length);
   const indoorLow = Math.min(...indoorData.map(item => item.value));
   const indoorHigh = Math.max(...indoorData.map(item => item.value));
+
+  const setDefaultData = (data) => {
+    const baseHumidity = data.humidity || 50;
+        
+    let genOutdoorData = [];
+    
+    if (range === "24hrs") {
+      // Generate 24-hour data based on current humidity with some variation
+      genOutdoorData = [
+        { time: "3", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 15))) },
+        { time: "6", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 10))) },
+        { time: "9", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 5))) },
+        { time: "12", value: Math.max(0, Math.min(100, Math.round(baseHumidity))) },
+        { time: "15", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 5))) },
+        { time: "18", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 10))) },
+        { time: "21", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 5))) },
+        { time: "24", value: Math.max(0, Math.min(100, Math.round(baseHumidity))) },
+      ];
+    } else {
+      // Generate 7-day data with more variation
+      genOutdoorData = [
+        { time: "Now", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 10))) },
+        { time: "Tue", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 5))) },
+        { time: "Wed", value: Math.max(0, Math.min(100, Math.round(baseHumidity))) },
+        { time: "Thu", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 8))) },
+        { time: "Fri", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 12))) },
+        { time: "Sat", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 5))) },
+        { time: "Sun", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 3))) },
+      ];
+    }
+    
+    setOutdoorData(genOutdoorData);
+    
+    // Calculate outdoor stats
+    const values = genOutdoorData.map(item => item.value);
+    const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    
+    setOutdoorStats({
+      average: Math.round(avg),
+      low: min,
+      high: max,
+    });
+  }
 
   useEffect(() => {
     const fetchWeatherData = async (latitude, longitude) => {
@@ -79,48 +150,7 @@ export default function HumidityPage() {
         
         // Extract humidity value from weather data
         // Note: Assuming your weather API returns humidity in the response
-        const baseHumidity = data.humidity || 50;
-        
-        let genOutdoorData = [];
-        
-        if (range === "24hrs") {
-          // Generate 24-hour data based on current humidity with some variation
-          genOutdoorData = [
-            { time: "3", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 15))) },
-            { time: "6", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 10))) },
-            { time: "9", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 5))) },
-            { time: "12", value: Math.max(0, Math.min(100, Math.round(baseHumidity))) },
-            { time: "15", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 5))) },
-            { time: "18", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 10))) },
-            { time: "21", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 5))) },
-            { time: "24", value: Math.max(0, Math.min(100, Math.round(baseHumidity))) },
-          ];
-        } else {
-          // Generate 7-day data with more variation
-          genOutdoorData = [
-            { time: "Mon", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 10))) },
-            { time: "Tue", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 5))) },
-            { time: "Wed", value: Math.max(0, Math.min(100, Math.round(baseHumidity))) },
-            { time: "Thu", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 8))) },
-            { time: "Fri", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 12))) },
-            { time: "Sat", value: Math.max(0, Math.min(100, Math.round(baseHumidity + 5))) },
-            { time: "Sun", value: Math.max(0, Math.min(100, Math.round(baseHumidity - 3))) },
-          ];
-        }
-        
-        setOutdoorData(genOutdoorData);
-        
-        // Calculate outdoor stats
-        const values = genOutdoorData.map(item => item.value);
-        const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
-        const min = Math.min(...values);
-        const max = Math.max(...values);
-        
-        setOutdoorStats({
-          average: Math.round(avg),
-          low: min,
-          high: max,
-        });
+        setDefaultData(data)
       } catch (err) {
         console.error("Error fetching weather data:", err);
         setError(err.message);
@@ -190,7 +220,7 @@ export default function HumidityPage() {
     >
       <Box
         sx={{
-          width: { xs: "100%", sm: "450px" },
+          width: "calc(100vh * 9 / 16)",
           maxWidth: "450px",
           bgcolor: "#202a32",
           color: "white",
@@ -325,6 +355,7 @@ export default function HumidityPage() {
                   stroke="#94a3b8"
                   axisLine={false}
                   tickLine={false}
+                  angle={-30}
                 />
                 <YAxis
                   domain={[0, 100]}
@@ -415,6 +446,7 @@ export default function HumidityPage() {
                     stroke="#94a3b8"
                     axisLine={false}
                     tickLine={false}
+                    angle={-30}
                   />
                   <YAxis
                     domain={[0, 100]}

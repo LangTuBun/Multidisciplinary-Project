@@ -17,6 +17,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import BottomNavigation from "../../components/BottomNavigation";
+import { useParams } from "react-router-dom";
+import { fetchTempReport } from "../../services/api";
 
 // Static indoor data for 24 hours
 const indoorData24h = [
@@ -42,6 +44,7 @@ const indoorData7d = [
 ];
 
 export default function TemperaturePage() {
+  const params = useParams() ;
   const [range, setRange] = useState("24hrs");
   const [outdoorData, setOutdoorData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,10 +55,41 @@ export default function TemperaturePage() {
     high: "--",
   });
   const [indoorData, setIndoorData] = useState(indoorData24h);
+  const roomId = params.id || (location.state && location.state.roomId);
+
+  const fetchIndoorReport = async () => {
+    try {
+      const response = await fetchTempReport(roomId, range) ;
+      
+      if (!response.statusText || response.statusText != "OK") {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+
+      const data = response.data ;
+
+      console.log("Temperature report: ", data) ;
+
+      const convertedData = data.date.map((day, index) => {
+      return {time: day, value: data.temperature[index]}
+    })
+
+      console.log("Converted data: ", convertedData)
+      setIndoorData(convertedData)
+
+    } catch (err) {
+      console.log("Error when fetching indoor temp. report:", err)
+    }
+  }
 
   // Update indoor data when range changes
   useEffect(() => {
-    setIndoorData(range === "24hrs" ? indoorData24h : indoorData7d);
+    try {
+      console.log("roomId: ", roomId) ;
+      fetchIndoorReport() ;
+    } catch (err) {
+      console.log("error when fetching indoor data:", err)
+      setIndoorData(range === "24hrs" ? indoorData24h : indoorData7d);
+    }
   }, [range]);
 
   useEffect(() => {
@@ -156,7 +190,7 @@ export default function TemperaturePage() {
     >
       <Box
         sx={{
-          width: { xs: "100%", sm: "450px" },
+          width: "calc(100vh * 9 / 16)",
           maxWidth: "450px",
           bgcolor: "#202a32",
           color: "white",
@@ -289,7 +323,9 @@ export default function TemperaturePage() {
                   dataKey="time"
                   stroke="#94a3b8"
                   axisLine={false}
-                  tickLine={false} />
+                  tickLine={false} 
+                  angle={-30}
+                />
                 <YAxis
                   domain={[0, 40]}
                   stroke="#94a3b8"
@@ -376,7 +412,8 @@ export default function TemperaturePage() {
                     dataKey="time" 
                     stroke="#94a3b8" 
                     axisLine={false} 
-                    tickLine={false} 
+                    tickLine={false}
+                    angle={-30}
                   />
                   <YAxis 
                     domain={[0, 40]} 
